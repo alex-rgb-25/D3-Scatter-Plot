@@ -1,0 +1,204 @@
+<DOCTYPE html>
+    <html>
+        <head>
+            <title>
+                FCC : D3 Scatter Plot 
+            </title>
+            <style>
+                body {
+                    background-color: teal;
+                }
+         div.tooltip {	
+    position: absolute;			
+    text-align: center;					
+    padding: 2px;				
+    font: 12px sans-serif;		
+    background: lightsteelblue;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
+            </style>
+        </head>
+
+<body>
+    
+
+    <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+    
+
+    <script src="https://d3js.org/d3.v5.js"></script>
+
+
+    <script>
+    
+    
+    document.addEventListener('DOMContentLoaded',function(){
+    fetch('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json')
+       .then(response => response.json())
+       .then(data => {
+           
+    const tt=[];
+    for(let i=0;i<data.length;i++){
+    var parsedTime = data[i].Time.split(':');
+    tt[i] = new Date(1970, 0, 1, 0, parsedTime[0], parsedTime[1]);
+  
+       // console.log(tt[i]);
+  }
+
+//div for tooltip:
+
+var div = d3.select("body").append("div")
+    .attr("class","tooltip")
+    .style("opacity",0)
+    .attr("id","tooltip")
+    // #############################
+
+
+
+//collecting data:
+
+const years=[];
+const times=[];
+const complete = [];
+
+    for(let i=0;i<data.length;i++){
+        complete[i]=[];
+        years[i]=data[i].Year;
+        times[i]= data[i].Time;
+        complete[i].push(years[i],tt[i],data[i].Name,data[i].Nationality,data[i].Year,data[i].Doping);
+        console.log(complete[i]);
+    }
+
+
+        const w = 1000;
+        const h = 600;
+        const padding = 60;
+    
+
+
+
+
+        var timeFormat = d3.timeFormat("%M:%S");
+
+        const xScale = d3.scaleLinear()
+                         .domain([d3.min(years, (d) =>d-1), d3.max(years, (d) => d)])
+                         //.domain([0, 200])
+                         .range([padding, w - padding]);
+        const yScale = d3.scaleTime()
+                         .domain([d3.max(tt, (d) => d), d3.min(tt, (d) => d)])
+                         //.domain([0, 200])
+                         .range([h - padding, padding]);
+        const svg = d3.select("body")
+                      .append("svg")
+                      .attr("width", w)
+                      .attr("height", h)
+                      
+                      .style("background-color","white")
+                      .attr("position","absolute")
+     
+                      svg.append('text')
+    .attr('transform', 'rotate(-90)')
+    .attr('x', 160)
+    .attr('y', 144)
+    .style('font-size', 18)
+    .text('Time in Minutes');
+          svg.selectAll("circle")
+           // Add your code below this line
+    
+        .data(complete)
+        .enter()
+
+        .append("circle")
+       .attr("cx", (d) => xScale(d[0]))
+       .attr("cy", (d) => {
+           return yScale(d[1]) })
+       .attr("r", 5)
+       .attr("class","dot")
+
+       .style("fill", function(d) {
+      if(d[5]==""){
+          return '#69b3a2'
+      }else {
+          return 'red'
+      }
+    })
+
+
+
+       .attr('data-xvalue', function(d, i) {
+      return complete[i][0]
+    })
+    .attr('data-yvalue', function(d, i) {
+      return complete[i][1]
+    })
+    .on("mouseover", function(d,i) {
+       div.transition()
+       .duration(200)
+       .style("opacity", .9);
+       div.html("<p>"+d[2]+": "+d[3]+ "</p>"+"<p>Year: "+d[0]+", Time:" +d[1].getMinutes()+":"+d[1].getSeconds()+"</p>" +"<p>"+d[5]+"</p>")
+       .style("left", (d3.event.pageX) + "px")		
+      .style("top", (d3.event.pageY ) + "px")	
+      .attr('data-date', complete[i][0])
+      .attr('data-year', d[0])
+      d3.select(this)
+      .style("stroke", "red")
+    })
+    .on("mouseout",function(d){
+       div.transition()
+       .duration(500)
+       .style("opacity", 0)
+       d3.select(this)
+      .style("stroke", "none")
+    })  
+    
+        const xAxis = d3.axisBottom(xScale).tickFormat(d3.format("d"));
+        const yAxis = d3.axisLeft(yScale).tickFormat(timeFormat);
+        svg.append("g")
+           .attr("transform", "translate(0," + (h - padding) + ")")
+           .attr("id","x-axis")
+           .attr("class","tick")
+           .call(xAxis);
+        svg.append("g")
+           .attr("transform", "translate(" + padding + ",0)")
+           .attr("id","y-axis")
+           .attr("class","tick")
+           .call(yAxis)         
+    
+        
+
+           svg.append("circle").attr("cx",700).attr("cy",130).attr("r", 6).style("fill", "#69b3a2").attr("id","legend")
+svg.append("circle").attr("cx",700).attr("cy",160).attr("r", 6).style("fill", "red")
+svg.append("text").attr("x", 720).attr("y", 130).text("no doping allegations").style("font-size", "15px").attr("alignment-baseline","middle")
+svg.append("text").attr("x", 720).attr("y", 160).text("riders with doping allegations").style("font-size", "15px").attr("alignment-baseline","middle")
+
+
+
+          })
+    
+
+          
+
+
+    
+    });
+
+
+
+
+
+    
+    </script>
+
+
+
+
+
+<div style="padding-left:50px">
+    <h1 id="title">Doping in Professional Bicycle Racing</h1>
+    <h3>35 Fastest times up Alpe d'Huez</h3>
+</div>
+    
+</body>
+    </html>
+</DOCTYPE>
